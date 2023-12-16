@@ -1,58 +1,53 @@
 import React from 'react';
-import css from './feedback.module.css'
+import css from './feedback.module.css';
+import Statistics from './StatsComp/Statictics';
+import FeedbackOptions from './StatsComp/FeedbackOptions';
+import Section from './StatsComp/Section';
+import Notification from './StatsComp/Notification';
 
 export class FeedBack extends React.Component {
-    state = {
-        good: 0,
-        neutral: 0,
-        bad: 0,
-      }
-      handleGood = () => {
-        this.setState((prev) => ({
-            good: prev.good+1
-        }))
-      };
-      handleNeutral = () => {
-        this.setState((prev) => ({
-            neutral: prev.neutral+1
-        }))
-      };
-      handleBad = () => {
-        this.setState((prev) => ({
-            bad: prev.bad+1
-        }))
-      };
-      countTotalFeedback = () => {
-        const count = Object.values(this.state);
-        const sum = count.reduce((accumulator, currentValue) => accumulator + currentValue, 0,)
-        return sum
-      }
-      countPositiveFeedbackPercentage = () => {
-      const percanatge = Math.floor((this.state.good / this.countTotalFeedback()) * 100);
-        return percanatge
-      }
+  state = {
+    good: 0,
+    neutral: 0,
+    bad: 0,
+  };
+
+  handleFeedback = (option) => {
+    this.setState((prev) => ({
+      [option]: prev[option] + 1,
+    }));
+  };
+
+  countTotalFeedback = () => {
+    const { good, neutral, bad } = this.state;
+    return good + neutral + bad;
+  };
+
+  countPositiveFeedbackPercentage = () => {
+    const total = this.countTotalFeedback();
+    return total === 0 ? 0 : Math.round((this.state.good / total) * 100);
+  };
 
 
-render(){
-    const fB = this.countTotalFeedback();
-    const perc = this.countPositiveFeedbackPercentage()
+  render() {
+    const { good, neutral, bad } = this.state;
+    const total = this.countTotalFeedback();
+    const positivePercentage = this.countPositiveFeedbackPercentage();
+
     return (
-       <>
-       <h2>
-            Please leave feedaback
-        </h2>
-        <ul className={css.feedbackUl}>
-        <button type='button' onClick={this.handleGood}>Good</button>
-        <button type='button' onClick={this.handleNeutral}>Neutral</button>
-        <button type='button' onClick={this.handleBad}>Bad</button>
-        </ul>
-        <h2>Stats</h2>
-        <p>Good: {this.state.good}</p>
-        <p>Neutral: {this.state.neutral}</p>
-        <p>Bad: {this.state.bad}</p>  
-        <p>Total: {fB}</p>     
-        <p>Positive feedback: {perc}%</p> 
-        </>
+      <div>
+        <Section title="Please leave feedback">
+          <FeedbackOptions options={{ good, neutral, bad }} onLeaveFeedback={this.handleFeedback} />
+        </Section>
 
-    )
-}}
+        <Section title="Statistics">
+          {total === 0 ? (
+            <Notification message="There is no feedback" />
+          ) : (
+            <Statistics good={good} neutral={neutral} bad={bad} total={total} positivePercentage={positivePercentage} />
+          )}
+        </Section>
+      </div>
+    );
+  }
+}
